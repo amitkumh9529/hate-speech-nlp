@@ -1,6 +1,7 @@
 from hate.components.data_ingestion import DataIngestion
 from hate.entity.config_entity import DataIngestionConfig
 
+# DATA INGESTION TEST
 
 if __name__ == "__main__":
     try:
@@ -14,9 +15,9 @@ if __name__ == "__main__":
         artifacts = data_ingestion.initiate_data_ingestion()
 
         # Step 4: Print outputs (this is your "test")
-        print("\n✅ Data Ingestion Completed")
+        print("\n Data Ingestion Completed")
         print(f"Imbalance Data Path: {artifacts.imbalance_data_file_path}")
         print(f"Raw Data Path: {artifacts.raw_data_file_path}")
 
     except Exception as e:
-        print(f"\n❌ Error occurred: {e}")
+        print(f"\n Error occurred: {e}")
