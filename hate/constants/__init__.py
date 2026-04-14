@@ -5,7 +5,6 @@ from datetime import datetime
 # Common constants
 TIMESTAMP: str = datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
 ARTIFACTS_DIR = os.path.join("artifacts", TIMESTAMP)
-BUCKET_NAME = 'hate-speech2024'
 ZIP_FILE_NAME = 'dataset.zip'
 LABEL = 'label'
 TWEET = 'tweet'
@@ -38,7 +37,7 @@ Y_TEST_FILE_NAME = 'y_test.csv'
 X_TRAIN_FILE_NAME = 'x_train.csv'
 
 RANDOM_STATE = 42
-EPOCH = 1
+EPOCH = 5
 BATCH_SIZE = 128
 VALIDATION_SPLIT = 0.2
 

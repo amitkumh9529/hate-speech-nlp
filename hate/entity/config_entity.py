@@ -5,7 +5,6 @@ import os
 @dataclass
 class DataIngestionConfig:
     def __init__(self):
-        self.BUCKET_NAME = BUCKET_NAME
         self.ZIP_FILE_NAME = ZIP_FILE_NAME
         self.DATA_INGESTION_ARTIFACTS_DIR: str = os.path.join(os.getcwd(),ARTIFACTS_DIR,DATA_INGESTION_ARTIFACTS_DIR)
         self.DATA_ARTIFACTS_DIR: str = os.path.join(self.DATA_INGESTION_ARTIFACTS_DIR,DATA_INGESTION_IMBALANCE_DATA_DIR)
@@ -57,7 +56,6 @@ class ModelEvaluationConfig:
     def __init__(self):
         self.MODEL_EVALUATION_MODEL_DIR: str = os.path.join(os.getcwd(),ARTIFACTS_DIR, MODEL_EVALUATION_ARTIFACTS_DIR)
         self.BEST_MODEL_DIR_PATH: str = os.path.join(self.MODEL_EVALUATION_MODEL_DIR,BEST_MODEL_DIR)
-        self.BUCKET_NAME = BUCKET_NAME 
         self.MODEL_NAME = MODEL_NAME 
 
 
@@ -67,8 +65,8 @@ class ModelPusherConfig:
 
     def __init__(self):
         self.TRAINED_MODEL_PATH = os.path.join(os.getcwd(),ARTIFACTS_DIR, MODEL_TRAINER_ARTIFACTS_DIR)
-        self.BUCKET_NAME = BUCKET_NAME
         self.MODEL_NAME = MODEL_NAME
+        self.BEST_MODEL_DIR = os.path.join(os.getcwd(), "artifacts", "best_model")
     
 
 

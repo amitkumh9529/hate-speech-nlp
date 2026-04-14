@@ -1,9 +1,10 @@
 # Creating model architecture.
 from hate.entity.config_entity import ModelTrainerConfig
-from keras.models import Sequential
-from keras.optimizers import RMSprop
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.layers import LSTM,Activation,Dense,Dropout,Input,Embedding,SpatialDropout1D
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.layers import LSTM,Activation,Dense,Dropout,Input,Embedding,SpatialDropout1D
+from tensorflow.keras.losses import BinaryCrossentropy
 from hate.constants import *
 
 class ModelArchitecture:
@@ -17,8 +18,9 @@ class ModelArchitecture:
         model.add(Embedding(MAX_WORDS, 100,input_length=MAX_LEN))
         model.add(SpatialDropout1D(0.2))
         model.add(LSTM(100,dropout=0.2,recurrent_dropout=0.2))
-        model.add(Dense(1,activation=ACTIVATION))
+        model.add(Dense(1))  # No sigmoid — using from_logits=True for numerical stability
+        model.build(input_shape=(None, MAX_LEN))
         model.summary()
-        model.compile(loss=LOSS,optimizer=RMSprop(),metrics=METRICS)
+        model.compile(loss=BinaryCrossentropy(from_logits=True),optimizer=RMSprop(),metrics=METRICS)
 
         return model

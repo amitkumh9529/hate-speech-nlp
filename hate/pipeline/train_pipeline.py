@@ -34,11 +34,11 @@ class TrainPipeline:
     def start_data_ingestion(self) -> DataIngestionArtifacts:
         logging.info("Entered the start_data_ingestion method of TrainPipeline class")
         try:
-            logging.info("Getting the data from GCLoud Storage bucket")
+            logging.info("Getting the data from local storage")
             data_ingestion = DataIngestion(data_ingestion_config = self.data_ingestion_config)
 
             data_ingestion_artifacts = data_ingestion.initiate_data_ingestion()
-            logging.info("Got the train and valid from GCLoud Storage")
+            logging.info("Got the train and valid from local storage")
             logging.info("Exited the start_data_ingestion method of TrainPipeline class")
             return data_ingestion_artifacts
 

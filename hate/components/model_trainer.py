@@ -6,8 +6,8 @@ from hate.logger import logging
 from hate.constants import *
 from hate.exception import CustomException
 from sklearn.model_selection import train_test_split
-from keras.preprocessing.text import Tokenizer
-from keras.utils import pad_sequences
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from hate.entity.config_entity import ModelTrainerConfig
 from hate.entity.artifact_entity import ModelTrainerArtifacts,DataTransformationArtifacts
 from hate.ml.model import ModelArchitecture
@@ -87,8 +87,9 @@ class ModelTrainer:
             sequences_matrix,tokenizer =self.tokenizing(x_train)
 
 
+            import numpy as np
             logging.info("Entered into model training")
-            model.fit(sequences_matrix, y_train, 
+            model.fit(sequences_matrix, np.array(y_train, dtype='float32'), 
                         batch_size=self.model_trainer_config.BATCH_SIZE, 
                         epochs = self.model_trainer_config.EPOCH, 
                         validation_split=self.model_trainer_config.VALIDATION_SPLIT, 
