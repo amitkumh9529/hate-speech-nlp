@@ -5,6 +5,7 @@ from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.layers import LSTM,Activation,Dense,Dropout,Input,Embedding,SpatialDropout1D
 from tensorflow.keras.losses import BinaryCrossentropy
+from tensorflow.keras.metrics import BinaryAccuracy
 from hate.constants import *
 
 class ModelArchitecture:
@@ -21,6 +22,10 @@ class ModelArchitecture:
         model.add(Dense(1))  # No sigmoid — using from_logits=True for numerical stability
         model.build(input_shape=(None, MAX_LEN))
         model.summary()
-        model.compile(loss=BinaryCrossentropy(from_logits=True),optimizer=RMSprop(),metrics=METRICS)
+        model.compile(
+            loss=BinaryCrossentropy(from_logits=True),
+            optimizer=RMSprop(),
+            metrics=[BinaryAccuracy(threshold=0.0, name="accuracy")]
+        )
 
         return model

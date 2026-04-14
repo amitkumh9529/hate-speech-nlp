@@ -320,7 +320,7 @@ st.markdown('<div class="shield-icon">🛡️</div>', unsafe_allow_html=True)
 st.markdown("""
 <div class="main-title">
     <h1>Hate Speech Detector</h1>
-    <p>AI-powered content moderation using deep learning</p>
+    
 </div>
 """, unsafe_allow_html=True)
 
@@ -365,9 +365,9 @@ with col2:
 
 if predict_clicked:
     if not user_text.strip():
-        st.warning("⚠️ Please enter some text to analyze.")
+        st.warning("Please enter some text to analyze.")
     elif not model_ready:
-        st.error("🚫 No trained model available. Please train the model first using the section below.")
+        st.error("No trained model available. Please train the model first using the section below.")
     else:
         with st.spinner("Analyzing..."):
             try:
@@ -378,7 +378,7 @@ if predict_clicked:
                 if "no hate" in result.lower():
                     st.markdown("""
                     <div class="result-safe">
-                        <div class="result-icon">✅</div>
+                        <div class="result-icon"></div>
                         <div class="result-label">Safe Content</div>
                         <div class="result-desc">No hate speech or abusive language detected</div>
                     </div>
@@ -386,7 +386,7 @@ if predict_clicked:
                 else:
                     st.markdown("""
                     <div class="result-hate">
-                        <div class="result-icon">⚠️</div>
+                        <div class="result-icon"></div>
                         <div class="result-label">Hate & Abusive Content Detected</div>
                         <div class="result-desc">This text contains potentially harmful language</div>
                     </div>
@@ -399,7 +399,7 @@ if predict_clicked:
 st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
 
 # ── Training Section ────────────────────────────────────
-with st.expander("🏋️ Train Model", expanded=not model_ready):
+with st.expander("Train Model", expanded=not model_ready):
     st.markdown("""
     <div style="color: #a0aec0; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.6;">
         Train the hate speech classification model using your local dataset.
@@ -409,7 +409,7 @@ with st.expander("🏋️ Train Model", expanded=not model_ready):
 
     train_col1, train_col2, train_col3 = st.columns([1, 2, 1])
     with train_col2:
-        train_clicked = st.button("🚀 Start Training", use_container_width=True)
+        train_clicked = st.button("Start Training", use_container_width=True)
 
     if train_clicked:
         progress_bar = st.progress(0, text="Initializing training pipeline...")
@@ -418,7 +418,7 @@ with st.expander("🏋️ Train Model", expanded=not model_ready):
         try:
             from hate.pipeline.train_pipeline import TrainPipeline
 
-            status_text.info("📦 Starting data ingestion...")
+            status_text.info("Starting data ingestion...")
             progress_bar.progress(10, text="Data ingestion in progress...")
 
             train_pipeline = TrainPipeline()
@@ -427,7 +427,7 @@ with st.expander("🏋️ Train Model", expanded=not model_ready):
             progress_bar.progress(100, text="Training complete!")
             status_text.empty()
 
-            st.success("🎉 Model trained successfully! You can now analyze text above.")
+            st.success("Model trained successfully! You can now analyze text above.")
             st.balloons()
 
             # Force recheck
@@ -437,25 +437,25 @@ with st.expander("🏋️ Train Model", expanded=not model_ready):
         except Exception as e:
             progress_bar.empty()
             status_text.empty()
-            st.error(f"❌ Training failed: {str(e)}")
+            st.error(f"Training failed: {str(e)}")
 
 
 # ── Info Section ────────────────────────────────────────
-st.markdown("""
-<div class="info-section">
-    <h4>ℹ️ About this App</h4>
-    <p>
-        This application uses a deep learning LSTM model to classify text as 
-        <strong>safe</strong> or <strong>hate/abusive</strong>. The model is trained on 
-        labeled tweet data and uses NLP techniques including tokenization, 
-        sequence padding, and text preprocessing to make predictions.
-    </p>
-</div>
-""", unsafe_allow_html=True)
+# st.markdown("""
+# <div class="info-section">
+#     <h4>ℹ️ About this App</h4>
+#     <p>
+#         This application uses a deep learning LSTM model to classify text as 
+#         <strong>safe</strong> or <strong>hate/abusive</strong>. The model is trained on 
+#         labeled tweet data and uses NLP techniques including tokenization, 
+#         sequence padding, and text preprocessing to make predictions.
+#     </p>
+# </div>
+# """, unsafe_allow_html=True)
 
 # ── Footer ──────────────────────────────────────────────
-st.markdown("""
-<div class="custom-footer">
-    Built with Streamlit • Powered by TensorFlow & Keras
-</div>
-""", unsafe_allow_html=True)
+# st.markdown("""
+# <div class="custom-footer">
+#     Built with Streamlit • Powered by TensorFlow & Keras
+# </div>
+# """, unsafe_allow_html=True)

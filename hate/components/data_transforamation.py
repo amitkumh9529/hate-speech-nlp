@@ -4,8 +4,6 @@ import sys
 import string
 import pandas as pd
 import nltk
-from nltk.corpus import stopwords
-nltk.download('stopwords')
 from sklearn.model_selection import train_test_split
 from hate.logger import logging 
 from hate.exception import CustomException
@@ -42,13 +40,13 @@ class DataTransformation:
             raw_data.drop(self.data_transformation_config.DROP_COLUMNS,axis = self.data_transformation_config.AXIS,
             inplace = self.data_transformation_config.INPLACE)
 
-            raw_data[raw_data[self.data_transformation_config.CLASS]==0][self.data_transformation_config.CLASS]=1
-            
-            # replace the value of 0 to 1
-            raw_data[self.data_transformation_config.CLASS].replace({0:1},inplace=True)
-
-            # Let's replace the value of 2 to 0.
-            raw_data[self.data_transformation_config.CLASS].replace({2:0}, inplace = True)
+            # Davidson dataset: 0=hate, 1=offensive, 2=neither.
+            # Project target: 1=hate/offensive, 0=no hate.
+            raw_data[self.data_transformation_config.CLASS] = (
+                raw_data[self.data_transformation_config.CLASS]
+                .replace({0: 1, 1: 1, 2: 0})
+                .astype("int32")
+            )
 
             # Let's change the name of the 'class' to label
             raw_data.rename(columns={self.data_transformation_config.CLASS:self.data_transformation_config.LABEL},inplace =True)
@@ -82,15 +80,15 @@ class DataTransformation:
             logging.info("Entered into the concat_data_cleaning function")
             # Let's apply stemming and stopwords on the data
             stemmer = nltk.SnowballStemmer("english")
-            stopword = set(stopwords.words('english'))
             words = str(words).lower()
-            words = re.sub('\[.*?\]', '', words)
-            words = re.sub('https?://\S+|www\.\S+', '', words)
+            words = re.sub(r'\[.*?\]', '', words)
+            words = re.sub(r'https?://\S+|www\.\S+', '', words)
             words = re.sub('<.*?>+', '', words)
             words = re.sub('[%s]' % re.escape(string.punctuation), '', words)
             words = re.sub('\n', '', words)
-            words = re.sub('\w*\d\w*', '', words)
-            words = [word for word in words.split(' ') if words not in stopword]
+            words = re.sub(r'\w*\d\w*', '', words)
+            # Short words such as "you" are useful context in abuse detection.
+            words = [word for word in words.split(' ') if word]
             words=" ".join(words)
             words = [stemmer.stem(word) for word in words.split(' ')]
             words=" ".join(words)
@@ -110,6 +108,8 @@ class DataTransformation:
             self.raw_data_cleaning()
             df = self.concat_dataframe()
             df[self.data_transformation_config.TWEET]=df[self.data_transformation_config.TWEET].apply(self.concat_data_cleaning)
+            df[self.data_transformation_config.TWEET] = df[self.data_transformation_config.TWEET].astype(str).str.strip()
+            df = df[df[self.data_transformation_config.TWEET] != ""].copy()
 
             os.makedirs(self.data_transformation_config.DATA_TRANSFORMATION_ARTIFACTS_DIR, exist_ok=True)
             df.to_csv(self.data_transformation_config.TRANSFORMED_FILE_PATH,index=False,header=True)

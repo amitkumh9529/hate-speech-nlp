@@ -73,7 +73,7 @@ class ModelEvaluation:
             raise CustomException(e, sys) from e
 
 
-    def evaluate(self):
+    def evaluate(self, model_path=None):
         """
         :return: accuracy of the model on test data
         """
@@ -88,7 +88,8 @@ class ModelEvaluation:
             with open('tokenizer.pickle', 'rb') as handle:
                 tokenizer = pickle.load(handle)
 
-            load_model = keras.models.load_model(self.model_trainer_artifacts.trained_model_path)
+            model_path = model_path or self.model_trainer_artifacts.trained_model_path
+            load_model = keras.models.load_model(model_path)
 
             x_test = x_test['tweet'].astype(str)
 
@@ -110,10 +111,12 @@ class ModelEvaluation:
             print(f"-----------------{x_test.shape}--------------")
             print(f"-----------------{y_test.shape}--------------")
             import numpy as np
-            accuracy = load_model.evaluate(test_sequences_matrix, np.array(y_test, dtype='float32'))
-            logging.info(f"the test accuracy is {accuracy}")
+            evaluation = load_model.evaluate(test_sequences_matrix, np.array(y_test, dtype='float32'))
+            loss, accuracy = evaluation[0], evaluation[1]
+            logging.info(f"the test loss is {loss}, the test accuracy is {accuracy}")
 
             lstm_prediction = load_model.predict(test_sequences_matrix)
+            lstm_prediction = 1 / (1 + np.exp(-lstm_prediction))
             res = []
             for prediction in lstm_prediction:
                 if prediction[0] < 0.5:
@@ -143,7 +146,7 @@ class ModelEvaluation:
             with open('tokenizer.pickle', 'rb') as handle:
                 load_tokenizer = pickle.load(handle)
 
-            trained_model_accuracy = self.evaluate()
+            trained_model_accuracy = self.evaluate(self.model_trainer_artifacts.trained_model_path)
 
             logging.info("Fetch best model from local storage")
             best_model_path = self.get_best_model_from_local()
@@ -158,7 +161,7 @@ class ModelEvaluation:
             else:
                 logging.info("Load best model fetched from local storage")
                 best_model = keras.models.load_model(best_model_path)
-                best_model_accuracy = self.evaluate()
+                best_model_accuracy = self.evaluate(best_model_path)
 
                 logging.info("Comparing accuracy between best_model and trained_model")
                 if trained_model_accuracy > best_model_accuracy:

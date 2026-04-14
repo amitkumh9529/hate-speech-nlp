@@ -1,8 +1,10 @@
 import os
 import io
 import sys
+import re
 import tensorflow.keras as keras
 import pickle
+import numpy as np
 from PIL import Image
 from hate.logger import logging
 from hate.constants import *
@@ -18,6 +20,18 @@ class PredictionPipeline:
         self.model_name = MODEL_NAME
         self.model_path = os.path.join("artifacts", "PredictModel")
         self.data_transformation = DataTransformation(data_transformation_config= DataTransformationConfig,data_ingestion_artifacts=DataIngestionArtifacts)
+
+    def _contains_direct_abuse(self, text: str) -> bool:
+        normalized_text = re.sub(r"[^a-z\s]", " ", str(text).lower())
+        normalized_text = re.sub(r"\s+", " ", normalized_text).strip()
+        direct_abuse_patterns = [
+            r"\bfuck\s+you\b",
+            r"\bfuck\s+off\b",
+            r"\bgo\s+fuck\s+yourself\b",
+            r"\byou\s+are\s+(a\s+)?bitch\b",
+            r"\byou(?:re|'re)?\s+(a\s+)?bitch\b",
+        ]
+        return any(re.search(pattern, normalized_text) for pattern in direct_abuse_patterns)
 
 
 
@@ -84,6 +98,10 @@ class PredictionPipeline:
             load_model=keras.models.load_model(best_model_path)
             with open('tokenizer.pickle', 'rb') as handle:
                 load_tokenizer = pickle.load(handle)
+
+            if self._contains_direct_abuse(text):
+                print("hate and abusive")
+                return "hate and abusive"
             
             text=self.data_transformation.concat_data_cleaning(text)
             text = [text]            
@@ -94,8 +112,9 @@ class PredictionPipeline:
             raw_pred = load_model.predict(padded)
             # Apply sigmoid since model outputs raw logits (from_logits=True)
             pred = tf.sigmoid(raw_pred).numpy()
+            score = float(np.squeeze(pred))
             print("pred", pred)
-            if pred > 0.5:
+            if score > 0.5:
 
                 print("hate and abusive")
                 return "hate and abusive"

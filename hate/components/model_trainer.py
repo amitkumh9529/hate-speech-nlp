@@ -28,8 +28,22 @@ class ModelTrainer:
             logging.info("Reading the data")
             df = pd.read_csv(csv_path, index_col=False)
             logging.info("Splitting the data into x and y")
+            df = df[[TWEET, LABEL]].dropna()
+            df[TWEET] = df[TWEET].astype(str).str.strip()
+            df = df[df[TWEET] != ""].copy()
+            # Backward compatibility for transformed files created before the
+            # binary label mapping fix.
+            df[LABEL] = df[LABEL].replace({2: 0})
+            df[LABEL] = df[LABEL].astype("int32")
+
             x = df[TWEET]
             y = df[LABEL]
+
+            invalid_labels = sorted(set(y.unique()) - {0, 1})
+            if invalid_labels:
+                raise ValueError(
+                    f"Binary classifier expected labels 0/1, found: {invalid_labels}"
+                )
 
             logging.info("Applying train_test_split on the data")
             x_train,x_test,y_train,y_test = train_test_split(x,y, test_size=0.3,random_state = 42)
@@ -47,6 +61,7 @@ class ModelTrainer:
     def tokenizing(self,x_train):
         try:
             logging.info("Applying tokenization on the data")
+            x_train = x_train.astype(str).fillna("")
             tokenizer = Tokenizer(num_words=self.model_trainer_config.MAX_WORDS)
             tokenizer.fit_on_texts(x_train)
             sequences = tokenizer.texts_to_sequences(x_train)
@@ -119,5 +134,3 @@ class ModelTrainer:
 
         except Exception as e:
             raise CustomException(e, sys) from e
-
-
