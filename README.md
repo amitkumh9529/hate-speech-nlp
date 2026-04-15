@@ -2,7 +2,7 @@
 
 An end-to-end NLP project that classifies user-entered text as either **hate/offensive content** or **no hate**. The project includes data ingestion, text preprocessing, model training, model evaluation, model persistence, a prediction pipeline, and a Streamlit web application for interactive use.
 
-Live App: Add your Streamlit deployment URL here
+Live App: https://hate-speech-nlp-whhzywbaq8uugmfkc94hqs.streamlit.app
 
 ## Problem Statement
 
