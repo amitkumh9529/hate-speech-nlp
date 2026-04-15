@@ -294,16 +294,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-def check_model_exists():
-    """Check if a trained model is available."""
+def find_saved_model():
+    """Return the newest trained model path, if one is available."""
     model_name = "model.h5"
     paths_to_check = [
         os.path.join("artifacts", "PredictModel", model_name),
         os.path.join("artifacts", "best_model", model_name),
     ]
-    for path in paths_to_check:
-        if os.path.exists(path):
-            return True
+    model_paths = [path for path in paths_to_check if os.path.exists(path)]
 
     # Check timestamped artifact directories
     artifacts_base = os.path.join(os.getcwd(), "artifacts")
@@ -311,8 +309,31 @@ def check_model_exists():
         for dir_name in sorted(os.listdir(artifacts_base), reverse=True):
             candidate = os.path.join(artifacts_base, dir_name, "ModelTrainerArtifacts", model_name)
             if os.path.exists(candidate):
-                return True
-    return False
+                model_paths.append(candidate)
+
+    if not model_paths:
+        return None
+
+    return max(model_paths, key=os.path.getmtime)
+
+
+def check_model_exists():
+    """Check if a trained model is available."""
+    return find_saved_model() is not None
+
+
+def get_saved_model_signature():
+    model_path = find_saved_model()
+    if model_path is None:
+        return None
+    return model_path, os.path.getmtime(model_path)
+
+
+@st.cache_resource
+def get_prediction_pipeline(model_signature):
+    from hate.pipeline.prediction_pipeline import PredictionPipeline
+
+    return PredictionPipeline()
 
 
 # ── Header ──────────────────────────────────────────────
@@ -371,8 +392,8 @@ if predict_clicked:
     else:
         with st.spinner("Analyzing..."):
             try:
-                from hate.pipeline.prediction_pipeline import PredictionPipeline
-                pipeline = PredictionPipeline()
+                model_signature = get_saved_model_signature()
+                pipeline = get_prediction_pipeline(model_signature)
                 result = pipeline.run_pipeline(user_text)
 
                 if "no hate" in result.lower():
@@ -431,6 +452,7 @@ with st.expander("Train Model", expanded=not model_ready):
             st.balloons()
 
             # Force recheck
+            get_prediction_pipeline.clear()
             time.sleep(1)
             st.rerun()
 

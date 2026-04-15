@@ -20,7 +20,10 @@ class DataIngestion:
 
             os.makedirs(self.data_ingestion_config.DATA_INGESTION_ARTIFACTS_DIR, exist_ok=True)
 
-            source_path = r"D:\\Python\\Hate speech\\data\\dataset.zip"
+            # Compute path relative to project root so it works cross-platform
+            # (Windows locally and Linux on Streamlit Cloud)
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            source_path = os.path.join(project_root, "data", "dataset.zip")
             destination_path = self.data_ingestion_config.ZIP_FILE_PATH
 
         # Copy file from local path to artifacts directory

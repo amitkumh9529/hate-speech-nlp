@@ -20,6 +20,10 @@ class PredictionPipeline:
         self.model_name = MODEL_NAME
         self.model_path = os.path.join("artifacts", "PredictModel")
         self.data_transformation = DataTransformation(data_transformation_config= DataTransformationConfig,data_ingestion_artifacts=DataIngestionArtifacts)
+        self._model = None
+        self._tokenizer = None
+        self._loaded_model_path = None
+        self._loaded_model_mtime = None
 
     def _contains_direct_abuse(self, text: str) -> bool:
         normalized_text = re.sub(r"[^a-z\s]", " ", str(text).lower())
@@ -59,7 +63,7 @@ class PredictionPipeline:
                 latest_model = best_model_candidate
 
             # 2. Fall back to latest timestamped artifacts directory
-            if latest_model is None:
+            if latest_model is None and os.path.exists(artifacts_base):
                 for dir_name in sorted(os.listdir(artifacts_base), reverse=True):
                     candidate = os.path.join(artifacts_base, dir_name, "ModelTrainerArtifacts", self.model_name)
                     if os.path.exists(candidate):
@@ -86,7 +90,29 @@ class PredictionPipeline:
 
         except Exception as e:
             raise CustomException(e, sys) from e
-        
+
+    def load_artifacts(self, model_path):
+        """Load the trained model and tokenizer once, then reuse them."""
+        try:
+            model_mtime = os.path.getmtime(model_path)
+            should_reload = (
+                self._model is None
+                or self._tokenizer is None
+                or self._loaded_model_path != model_path
+                or self._loaded_model_mtime != model_mtime
+            )
+
+            if should_reload:
+                self._model = keras.models.load_model(model_path)
+                with open("tokenizer.pickle", "rb") as handle:
+                    self._tokenizer = pickle.load(handle)
+                self._loaded_model_path = model_path
+                self._loaded_model_mtime = model_mtime
+
+            return self._model, self._tokenizer
+
+        except Exception as e:
+            raise CustomException(e, sys) from e
 
     
     def predict(self,best_model_path,text):
@@ -94,10 +120,7 @@ class PredictionPipeline:
         logging.info("Running the predict function")
         try:
             import tensorflow as tf
-            best_model_path:str = self.get_model_from_local()
-            load_model=keras.models.load_model(best_model_path)
-            with open('tokenizer.pickle', 'rb') as handle:
-                load_tokenizer = pickle.load(handle)
+            load_model, load_tokenizer = self.load_artifacts(best_model_path)
 
             if self._contains_direct_abuse(text):
                 print("hate and abusive")
