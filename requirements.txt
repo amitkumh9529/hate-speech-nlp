@@ -1,11 +1,11 @@
-numpy>=1.26,<2.4
-pandas>=2.2,<3.1
-tensorflow==2.20.0
-matplotlib>=3.8,<3.11
-seaborn>=0.13,<0.14
-nltk>=3.8,<4
-regex>=2024.0.0
-scikit-learn>=1.4,<1.8
-from-root>=1.3.0
-streamlit>=1.36,<2
+numpy
+pandas
+tensorflow
+matplotlib
+seaborn
+nltk
+regex
+scikit-learn
+from-root
+streamlit
 -e .
